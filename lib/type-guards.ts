@@ -1,4 +1,4 @@
-export interface ShopifyErrorLike {
+export interface StoreErrorLike {
   status: number;
   message: Error;
   cause?: Error;
@@ -12,7 +12,7 @@ export const isObject = (
   );
 };
 
-export const isShopifyError = (error: unknown): error is ShopifyErrorLike => {
+export const isStoreError = (error: unknown): error is StoreErrorLike => {
   if (!isObject(error)) return false;
 
   if (error instanceof Error) return true;
