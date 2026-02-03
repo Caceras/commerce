@@ -1,9 +1,5 @@
-import { HIDDEN_PRODUCT_TAG, TAGS } from 'lib/constants';
-import {
-  unstable_cacheLife as cacheLife,
-  unstable_cacheTag as cacheTag,
-  revalidateTag,
-} from 'next/cache';
+import { TAGS } from 'lib/constants';
+import { revalidateTag } from 'next/cache';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import {
@@ -13,7 +9,6 @@ import {
   mockProducts,
   getProductsByCollection,
   searchProducts,
-  getFeaturedProducts,
 } from './mock-data';
 import {
   Cart,
@@ -67,7 +62,9 @@ function calculateCartTotals(lines: CartItem[]): { subtotal: string; total: stri
 export async function addToCart(
   lines: { merchandiseId: string; quantity: number }[]
 ): Promise<Cart> {
-  const cartId = (await cookies()).get('cartId')?.value;
+  const cookieStore = await cookies();
+  const cartId = cookieStore.get('cartId')?.value;
+  
   if (!cartId) {
     throw new Error('Cart not found');
   }
@@ -133,7 +130,9 @@ export async function addToCart(
 }
 
 export async function removeFromCart(lineIds: string[]): Promise<Cart> {
-  const cartId = (await cookies()).get('cartId')?.value;
+  const cookieStore = await cookies();
+  const cartId = cookieStore.get('cartId')?.value;
+  
   if (!cartId) {
     throw new Error('Cart not found');
   }
@@ -158,7 +157,9 @@ export async function removeFromCart(lineIds: string[]): Promise<Cart> {
 export async function updateCart(
   lines: { id: string; merchandiseId: string; quantity: number }[]
 ): Promise<Cart> {
-  const cartId = (await cookies()).get('cartId')?.value;
+  const cookieStore = await cookies();
+  const cartId = cookieStore.get('cartId')?.value;
+  
   if (!cartId) {
     throw new Error('Cart not found');
   }
@@ -200,11 +201,8 @@ export async function updateCart(
 }
 
 export async function getCart(): Promise<Cart | undefined> {
-  'use cache';
-  cacheTag(TAGS.cart);
-  cacheLife('seconds');
-
-  const cartId = (await cookies()).get('cartId')?.value;
+  const cookieStore = await cookies();
+  const cartId = cookieStore.get('cartId')?.value;
 
   if (!cartId) {
     return undefined;
@@ -216,10 +214,6 @@ export async function getCart(): Promise<Cart | undefined> {
 export async function getCollection(
   handle: string
 ): Promise<Collection | undefined> {
-  'use cache';
-  cacheTag(TAGS.collections);
-  cacheLife('days');
-
   return mockCollections.find(c => c.handle === handle);
 }
 
@@ -232,10 +226,6 @@ export async function getCollectionProducts({
   reverse?: boolean;
   sortKey?: string;
 }): Promise<Product[]> {
-  'use cache';
-  cacheTag(TAGS.collections, TAGS.products);
-  cacheLife('days');
-
   let products = getProductsByCollection(collection);
   
   // Apply sorting
@@ -257,18 +247,10 @@ export async function getCollectionProducts({
 }
 
 export async function getCollections(): Promise<Collection[]> {
-  'use cache';
-  cacheTag(TAGS.collections);
-  cacheLife('days');
-
   return mockCollections;
 }
 
 export async function getMenu(handle: string): Promise<Menu[]> {
-  'use cache';
-  cacheTag(TAGS.collections);
-  cacheLife('days');
-
   if (handle === 'next-js-frontend-header-menu') {
     return mockMenu;
   }
@@ -292,20 +274,12 @@ export async function getPages(): Promise<Page[]> {
 }
 
 export async function getProduct(handle: string): Promise<Product | undefined> {
-  'use cache';
-  cacheTag(TAGS.products);
-  cacheLife('days');
-
   return mockProducts.find(p => p.handle === handle);
 }
 
 export async function getProductRecommendations(
   productId: string
 ): Promise<Product[]> {
-  'use cache';
-  cacheTag(TAGS.products);
-  cacheLife('days');
-
   // Return other products as recommendations (excluding the current product)
   return mockProducts.filter(p => p.id !== productId).slice(0, 4);
 }
@@ -319,10 +293,6 @@ export async function getProducts({
   reverse?: boolean;
   sortKey?: string;
 }): Promise<Product[]> {
-  'use cache';
-  cacheTag(TAGS.products);
-  cacheLife('days');
-
   let products = query ? searchProducts(query) : mockProducts;
   
   // Apply sorting
@@ -354,11 +324,11 @@ export async function revalidate(req: NextRequest): Promise<NextResponse> {
   }
 
   if (topic.includes('collection')) {
-    revalidateTag(TAGS.collections, 'seconds');
+    revalidateTag(TAGS.collections);
   }
 
   if (topic.includes('product')) {
-    revalidateTag(TAGS.products, 'seconds');
+    revalidateTag(TAGS.products);
   }
 
   return NextResponse.json({ status: 200, revalidated: true, now: Date.now() });
