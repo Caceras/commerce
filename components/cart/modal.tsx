@@ -11,7 +11,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { createCartAndSetCookie, redirectToCheckout } from "./actions";
+import { redirectToCheckout } from "./actions";
 import { useCart } from "./cart-context";
 import { DeleteItemButton } from "./delete-item-button";
 import { EditItemQuantityButton } from "./edit-item-quantity-button";
@@ -28,11 +28,7 @@ export default function CartModal() {
   const openCart = () => setIsOpen(true);
   const closeCart = () => setIsOpen(false);
 
-  useEffect(() => {
-    if (!cart) {
-      createCartAndSetCookie();
-    }
-  }, [cart]);
+  // Cart is created lazily when adding items, no need to create on mount
 
   useEffect(() => {
     if (

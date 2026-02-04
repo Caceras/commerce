@@ -10,7 +10,6 @@ import {
 } from "lib/shopify";
 import { updateTag } from "next/cache";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 
 export async function addItem(
   prevState: any,
@@ -21,9 +20,17 @@ export async function addItem(
   }
 
   try {
+    // Ensure cart exists before adding
+    const cookieStore = await cookies();
+    if (!cookieStore.get("cartId")?.value) {
+      const cart = await createCart();
+      cookieStore.set("cartId", cart.id!);
+    }
+    
     await addToCart([{ merchandiseId: selectedVariantId, quantity: 1 }]);
     updateTag(TAGS.cart);
   } catch (e) {
+    console.error(e);
     return "Error adding item to cart";
   }
 }
@@ -96,11 +103,17 @@ export async function updateItemQuantity(
 }
 
 export async function redirectToCheckout() {
-  let cart = await getCart();
-  redirect(cart!.checkoutUrl);
+  // In mock mode, just show an alert via a redirect to a checkout page
+  // In production, this would redirect to the actual checkout URL
+  const cart = await getCart();
+  if (cart && cart.lines.length > 0) {
+    // For demo purposes, we'll just reload the page
+    // In a real implementation, you'd redirect to cart.checkoutUrl
+    console.log("Checkout initiated for cart:", cart.id);
+  }
 }
 
 export async function createCartAndSetCookie() {
-  let cart = await createCart();
+  const cart = await createCart();
   (await cookies()).set("cartId", cart.id!);
 }
