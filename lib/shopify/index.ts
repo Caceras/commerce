@@ -3,6 +3,16 @@ import {
   SHOPIFY_GRAPHQL_API_ENDPOINT,
   TAGS,
 } from "lib/constants";
+import {
+  dummyCollections,
+  dummyMenus,
+  dummyPages,
+  dummyProducts,
+  getDummyCollection,
+  getDummyCollectionProducts,
+  getDummyProduct,
+  getDummyProducts,
+} from "lib/dummy-data";
 import { isShopifyError } from "lib/type-guards";
 import { ensureStartsWith } from "lib/utils";
 import {
@@ -298,6 +308,10 @@ export async function getCollection(
   cacheTag(TAGS.collections);
   cacheLife("days");
 
+  if (!endpoint) {
+    return getDummyCollection(handle);
+  }
+
   const res = await shopifyFetch<ShopifyCollectionOperation>({
     query: getCollectionQuery,
     variables: {
@@ -322,10 +336,7 @@ export async function getCollectionProducts({
   cacheLife("days");
 
   if (!endpoint) {
-    console.log(
-      `Skipping getCollectionProducts for '${collection}' - Shopify not configured`
-    );
-    return [];
+    return getDummyCollectionProducts(collection);
   }
 
   const res = await shopifyFetch<ShopifyCollectionProductsOperation>({
@@ -353,20 +364,7 @@ export async function getCollections(): Promise<Collection[]> {
   cacheLife("days");
 
   if (!endpoint) {
-    console.log("Skipping getCollections - Shopify not configured");
-    return [
-      {
-        handle: "",
-        title: "All",
-        description: "All products",
-        seo: {
-          title: "All",
-          description: "All products",
-        },
-        path: "/search",
-        updatedAt: new Date().toISOString(),
-      },
-    ];
+    return dummyCollections;
   }
 
   const res = await shopifyFetch<ShopifyCollectionsOperation>({
@@ -401,8 +399,7 @@ export async function getMenu(handle: string): Promise<Menu[]> {
   cacheLife("days");
 
   if (!endpoint) {
-    console.log(`Skipping getMenu for '${handle}' - Shopify not configured`);
-    return [];
+    return dummyMenus[handle] || [];
   }
 
   const res = await shopifyFetch<ShopifyMenuOperation>({
@@ -424,6 +421,10 @@ export async function getMenu(handle: string): Promise<Menu[]> {
 }
 
 export async function getPage(handle: string): Promise<Page> {
+  if (!endpoint) {
+    return dummyPages[handle]!;
+  }
+
   const res = await shopifyFetch<ShopifyPageOperation>({
     query: getPageQuery,
     variables: { handle },
@@ -433,6 +434,10 @@ export async function getPage(handle: string): Promise<Page> {
 }
 
 export async function getPages(): Promise<Page[]> {
+  if (!endpoint) {
+    return Object.values(dummyPages);
+  }
+
   const res = await shopifyFetch<ShopifyPagesOperation>({
     query: getPagesQuery,
   });
@@ -446,8 +451,7 @@ export async function getProduct(handle: string): Promise<Product | undefined> {
   cacheLife("days");
 
   if (!endpoint) {
-    console.log(`Skipping getProduct for '${handle}' - Shopify not configured`);
-    return undefined;
+    return getDummyProduct(handle);
   }
 
   const res = await shopifyFetch<ShopifyProductOperation>({
@@ -466,6 +470,11 @@ export async function getProductRecommendations(
   "use cache";
   cacheTag(TAGS.products);
   cacheLife("days");
+
+  if (!endpoint) {
+    // Return other products as recommendations
+    return dummyProducts.filter((p) => p.id !== productId).slice(0, 4);
+  }
 
   const res = await shopifyFetch<ShopifyProductRecommendationsOperation>({
     query: getProductRecommendationsQuery,
@@ -489,6 +498,10 @@ export async function getProducts({
   "use cache";
   cacheTag(TAGS.products);
   cacheLife("days");
+
+  if (!endpoint) {
+    return getDummyProducts({ query, reverse, sortKey });
+  }
 
   const res = await shopifyFetch<ShopifyProductsOperation>({
     query: getProductsQuery,

@@ -4,7 +4,7 @@ import Footer from "components/layout/footer";
 
 export const metadata = {
   description:
-    "High-performance ecommerce store built with Next.js, Vercel, and Shopify.",
+    "Premium SaaS templates built with Next.js, TypeScript, and Tailwind CSS. Ship your product faster.",
   openGraph: {
     type: "website",
   },

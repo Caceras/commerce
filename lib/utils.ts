@@ -20,24 +20,12 @@ export const ensureStartsWith = (stringToCheck: string, startsWith: string) =>
     : `${startsWith}${stringToCheck}`;
 
 export const validateEnvironmentVariables = () => {
-  const requiredEnvironmentVariables = [
-    "SHOPIFY_STORE_DOMAIN",
-    "SHOPIFY_STOREFRONT_ACCESS_TOKEN",
-  ];
-  const missingEnvironmentVariables = [] as string[];
-
-  requiredEnvironmentVariables.forEach((envVar) => {
-    if (!process.env[envVar]) {
-      missingEnvironmentVariables.push(envVar);
-    }
-  });
-
-  if (missingEnvironmentVariables.length) {
-    throw new Error(
-      `The following environment variables are missing. Your site will not work without them. Read more: https://vercel.com/docs/integrations/shopify#configure-environment-variables\n\n${missingEnvironmentVariables.join(
-        "\n",
-      )}\n`,
-    );
+  // When Shopify env vars are not set, the app uses dummy data - no need to throw
+  if (
+    !process.env.SHOPIFY_STORE_DOMAIN ||
+    !process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN
+  ) {
+    return;
   }
 
   if (
