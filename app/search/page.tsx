@@ -2,10 +2,14 @@ import Grid from "components/grid";
 import ProductGridItems from "components/layout/product-grid-items";
 import { defaultSort, sorting } from "lib/constants";
 import { getProducts } from "lib/shopify";
+import { baseUrl } from "lib/utils";
 
 export const metadata = {
   title: "Search",
-  description: "Search for products in the store.",
+  description: "Browse and search premium SaaS templates.",
+  alternates: {
+    canonical: `${baseUrl}/search`,
+  },
 };
 
 export default async function SearchPage(props: {
@@ -24,7 +28,7 @@ export default async function SearchPage(props: {
       {searchValue ? (
         <p className="mb-4">
           {products.length === 0
-            ? "There are no products that match "
+            ? "There are no templates that match "
             : `Showing ${products.length} ${resultsText} for `}
           <span className="font-bold">&quot;{searchValue}&quot;</span>
         </p>

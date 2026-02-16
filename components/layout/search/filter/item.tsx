@@ -1,74 +1,92 @@
-"use client";
-
 import clsx from "clsx";
 import type { SortFilterItem } from "lib/constants";
-import { createUrl } from "lib/utils";
-import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
 import type { ListItem, PathFilterItem } from ".";
 
-function PathFilterItem({ item }: { item: PathFilterItem }) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const active = pathname === item.path;
-  const newParams = new URLSearchParams(searchParams.toString());
-  const DynamicTag = active ? "p" : Link;
-
-  newParams.delete("q");
-
-  return (
-    <li className="mt-2 flex text-black dark:text-white" key={item.title}>
-      <DynamicTag
-        href={createUrl(item.path, newParams)}
-        className={clsx(
-          "w-full text-sm underline-offset-4 hover:underline dark:hover:text-neutral-100",
-          {
-            "underline underline-offset-4": active,
-          },
-        )}
-      >
-        {item.title}
-      </DynamicTag>
-    </li>
-  );
-}
-
-function SortFilterItem({ item }: { item: SortFilterItem }) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const active = searchParams.get("sort") === item.slug;
-  const q = searchParams.get("q");
-  const href = createUrl(
-    pathname,
-    new URLSearchParams({
-      ...(q && { q }),
-      ...(item.slug && item.slug.length && { sort: item.slug }),
-    }),
-  );
-  const DynamicTag = active ? "p" : Link;
+function PathFilterItemComponent({
+  item,
+  currentPath,
+}: {
+  item: PathFilterItem;
+  currentPath?: string;
+}) {
+  const active = currentPath === item.path;
 
   return (
     <li
-      className="mt-2 flex text-sm text-black dark:text-white"
+      className="mt-2 flex text-neutral-900 dark:text-neutral-100"
       key={item.title}
     >
-      <DynamicTag
-        prefetch={!active ? false : undefined}
-        href={href}
-        className={clsx("w-full hover:underline hover:underline-offset-4", {
-          "underline underline-offset-4": active,
-        })}
-      >
-        {item.title}
-      </DynamicTag>
+      {active ? (
+        <p className="w-full text-sm underline underline-offset-4">
+          {item.title}
+        </p>
+      ) : (
+        <a
+          href={item.path}
+          className="w-full text-sm underline-offset-4 hover:underline"
+        >
+          {item.title}
+        </a>
+      )}
     </li>
   );
 }
 
-export function FilterItem({ item }: { item: ListItem }) {
+function SortFilterItemComponent({
+  item,
+  currentPath,
+  currentSort,
+  currentQuery,
+}: {
+  item: SortFilterItem;
+  currentPath?: string;
+  currentSort?: string;
+  currentQuery?: string;
+}) {
+  const active = currentSort === item.slug || (!currentSort && !item.slug);
+  const params = new URLSearchParams();
+  if (currentQuery) params.set("q", currentQuery);
+  if (item.slug) params.set("sort", item.slug);
+  const href = `${currentPath || "/search"}${params.toString() ? `?${params.toString()}` : ""}`;
+
+  return (
+    <li
+      className="mt-2 flex text-sm text-neutral-900 dark:text-neutral-100"
+      key={item.title}
+    >
+      {active ? (
+        <p className="w-full underline underline-offset-4">{item.title}</p>
+      ) : (
+        <a
+          href={href}
+          className="w-full hover:underline hover:underline-offset-4"
+        >
+          {item.title}
+        </a>
+      )}
+    </li>
+  );
+}
+
+export function FilterItem({
+  item,
+  currentPath,
+  currentSort,
+  currentQuery,
+}: {
+  item: ListItem;
+  currentPath?: string;
+  currentSort?: string;
+  currentQuery?: string;
+}) {
   return "path" in item ? (
-    <PathFilterItem item={item} />
+    <PathFilterItemComponent item={item} currentPath={currentPath} />
   ) : (
-    <SortFilterItem item={item} />
+    <SortFilterItemComponent
+      item={item}
+      currentPath={currentPath}
+      currentSort={currentSort}
+      currentQuery={currentQuery}
+    />
   );
 }

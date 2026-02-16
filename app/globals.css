@@ -1,7 +1,12 @@
 @import "tailwindcss";
 
-@plugin "@tailwindcss/container-queries";
 @plugin "@tailwindcss/typography";
+
+@theme inline {
+  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
+  --color-border: #e5e5e5;
+  --color-border-dark: #262626;
+}
 
 @layer base {
   *,
@@ -9,7 +14,17 @@
   ::before,
   ::backdrop,
   ::file-selector-button {
-    border-color: var(--color-gray-200, currentColor);
+    border-color: var(--color-border);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+      border-color: var(--color-border-dark);
+    }
   }
 }
 
@@ -27,6 +42,18 @@
 
 a,
 input,
-button {
-  @apply focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-50 dark:focus-visible:ring-neutral-600 dark:focus-visible:ring-offset-neutral-900;
+button,
+summary {
+  @apply focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-50 dark:focus-visible:ring-neutral-500 dark:focus-visible:ring-offset-neutral-900;
+}
+
+/* CSS-only mobile menu toggle */
+details.mobile-menu > summary {
+  list-style: none;
+}
+details.mobile-menu > summary::-webkit-details-marker {
+  display: none;
+}
+details.mobile-menu[open] > .mobile-menu-overlay {
+  display: block;
 }

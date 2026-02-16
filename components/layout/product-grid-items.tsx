@@ -11,11 +11,10 @@ export default function ProductGridItems({
   return (
     <>
       {products.map((product) => (
-        <Grid.Item key={product.handle} className="animate-fadeIn">
+        <Grid.Item key={product.handle} className="aspect-square">
           <Link
             className="relative inline-block h-full w-full"
             href={`/product/${product.handle}`}
-            prefetch={true}
           >
             <GridTileImage
               alt={product.title}
@@ -27,6 +26,7 @@ export default function ProductGridItems({
               src={product.featuredImage?.url}
               fill
               sizes="(min-width: 768px) 33vw, (min-width: 640px) 50vw, 100vw"
+              loading="lazy"
             />
           </Link>
         </Grid.Item>
